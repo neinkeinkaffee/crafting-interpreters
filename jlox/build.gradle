@@ -1,0 +1,18 @@
+plugins {
+    id 'application'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+}
+
+application {
+    mainClass = 'com.craftinginterpreters.lox.Lox'
+}
+
+run {
+    standardInput = System.in
+}
