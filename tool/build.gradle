@@ -1,0 +1,15 @@
+plugins {
+    id 'application'
+}
+
+repositories {
+    mavenCentral()
+}
+
+application {
+    mainClass = 'com.craftinginterpreters.tool.GenerateAst'
+}
+
+run {
+    args("../jlox/src/main/java/com/craftinginterpreters/lox")
+}
