@@ -9,10 +9,13 @@ import static com.craftinginterpreters.lox.TokenType.COMMA;
 import static com.craftinginterpreters.lox.TokenType.EOF;
 import static com.craftinginterpreters.lox.TokenType.LEFT_PAREN;
 import static com.craftinginterpreters.lox.TokenType.MINUS;
+import static com.craftinginterpreters.lox.TokenType.NUMBER;
 import static com.craftinginterpreters.lox.TokenType.PLUS;
 import static com.craftinginterpreters.lox.TokenType.RIGHT_PAREN;
 import static com.craftinginterpreters.lox.TokenType.SEMICOLON;
+import static com.craftinginterpreters.lox.TokenType.SLASH;
 import static com.craftinginterpreters.lox.TokenType.STAR;
+import static com.craftinginterpreters.lox.TokenType.STRING;
 
 public class Scanner {
     private final String source;
@@ -55,10 +58,63 @@ public class Scanner {
             case '!':
                 addToken(match('=') ? BANG_EQUAL : BANG);
                 break;
+            case '/':
+                if (match('/')) {
+                    // Comment goes till end of line.
+                    while (peek() != '\n' && !isAtEnd()) advance();
+                }
+                else {
+                    addToken(SLASH);
+                }
+                break;
+            case ' ':
+            case '\r':
+            case '\t':
+                // Ignore whitespace.
+                break;
+            case '\n':
+                line++;
+                break;
+            case '"': string(); break;
             default:
-                Lox.error(line, "Unexpected character.");
+                if (isDigit(c)) {
+                    number();
+                } else {
+                    Lox.error(line, "Unexpected character: " + c);
+                }
                 break;
         }
+    }
+
+    private void number() {
+        while (isDigit(peek())) advance();
+
+        if (peek() == '.' && isDigit(peekNext())) {
+            // Consume the '.'
+            advance();
+            while (isDigit(peek())) advance();
+        }
+
+        addToken(NUMBER, Double.parseDouble(source.substring(start, current)));
+    }
+
+    private void string() {
+        while (peek() != '"' && !isAtEnd()) {
+            // Advance till the closing '"' unless we hit EOF first
+            if (peek() == '\n') line++;
+            advance();
+        }
+
+        if (isAtEnd()) {
+            Lox.error(line, "Unterminated string.");
+            return;
+        }
+
+        advance(); // The closing '"'
+
+        // Trim the surrounding quotes.
+        String value = source.substring(start + 1, current - 1);
+        addToken(STRING, value);
     }
 
     private boolean match(char expected) {
@@ -67,6 +123,20 @@ public class Scanner {
 
         current++;
         return true;
+    }
+
+    private char peek() {
+        if (isAtEnd()) return '\0';
+        return source.charAt(current);
+    }
+
+    private char peekNext() {
+        if (current + 1 >= source.length()) return '\0';
+        else return source.charAt(current + 1);
+    }
+
+    private boolean isDigit(char c) {
+        return c >= '0' && c <= '9';
     }
 
     private void addToken(TokenType type) {
