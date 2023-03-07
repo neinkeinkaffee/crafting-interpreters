@@ -170,6 +170,10 @@ public class Scanner {
         addToken(STRING, value);
     }
 
+    private char advance() {
+        return source.charAt(current++);
+    }
+
     private boolean match(char expected) {
         if (isAtEnd()) return false;
         if (source.charAt(current) != expected) return false;
@@ -207,9 +211,5 @@ public class Scanner {
     private void addToken(TokenType type, Object literal) {
         String text = source.substring(start, current);
         tokens.add(new Token(type, text, literal, line));
-    }
-
-    private char advance() {
-        return source.charAt(current++);
     }
 }
