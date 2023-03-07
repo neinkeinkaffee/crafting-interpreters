@@ -3,5 +3,5 @@
 ## Run with Gradle
 
 ```
-./gradlew run --quiet --console=plain
+./gradlew :tool:run :jlox:run
 ```
