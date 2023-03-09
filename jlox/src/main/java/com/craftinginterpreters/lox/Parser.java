@@ -10,6 +10,7 @@ import static com.craftinginterpreters.lox.TokenType.EQUAL;
 import static com.craftinginterpreters.lox.TokenType.FALSE;
 import static com.craftinginterpreters.lox.TokenType.GREATER;
 import static com.craftinginterpreters.lox.TokenType.GREATER_EQUAL;
+import static com.craftinginterpreters.lox.TokenType.IDENTIFIER;
 import static com.craftinginterpreters.lox.TokenType.LEFT_PAREN;
 import static com.craftinginterpreters.lox.TokenType.LESS;
 import static com.craftinginterpreters.lox.TokenType.LESS_EQUAL;
@@ -24,6 +25,7 @@ import static com.craftinginterpreters.lox.TokenType.SLASH;
 import static com.craftinginterpreters.lox.TokenType.STAR;
 import static com.craftinginterpreters.lox.TokenType.STRING;
 import static com.craftinginterpreters.lox.TokenType.TRUE;
+import static com.craftinginterpreters.lox.TokenType.VAR;
 
 public class Parser {
     private static class ParseError extends RuntimeException {}
@@ -39,10 +41,32 @@ public class Parser {
         List<Stmt> statements = new ArrayList<>();
 
         while(!isAtEnd()) {
-            statements.add(statement());
+            statements.add(declaration());
         }
 
         return statements;
+    }
+
+    private Stmt declaration() {
+        try {
+            if (match(VAR)) return varDeclaration();
+            return statement();
+        } catch (ParseError error) {
+            synchronise();
+            return null;
+        }
+    }
+
+    private Stmt varDeclaration() {
+        Token name = consume(IDENTIFIER, "Expect variable name.");
+
+        Expr initialiser = null;
+        if (match(EQUAL)) {
+            initialiser = expression();
+        }
+
+        consume(SEMICOLON, "Expect ';' after variable declaration.");
+        return new Stmt.Var(name, initialiser);
     }
 
     private Stmt statement() {
@@ -54,13 +78,13 @@ public class Parser {
 
     private Stmt printStatement() {
         Expr value = expression();
-        consume(SEMICOLON, "Expected semicolon after expression.");
+        consume(SEMICOLON, "Expect semicolon after expression.");
         return new Stmt.Print(value);
     }
 
     private Stmt expressionStatement() {
         Expr expr = expression();
-        consume(SEMICOLON, "Expected semicolon after expression.");
+        consume(SEMICOLON, "Expect semicolon after expression.");
         return new Stmt.Expression(expr);
     }
 
@@ -139,6 +163,10 @@ public class Parser {
             Expr expr = expression();
             consume(RIGHT_PAREN, "Expect ')' after expression.");
             return new Expr.Grouping(expr);
+        }
+
+        if (match(VAR)) {
+            return new Expr.Variable(previous());
         }
 
         throw error(peek(), "Expect expression.");
