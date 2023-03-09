@@ -1,5 +1,6 @@
 package com.craftinginterpreters.lox;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.craftinginterpreters.lox.TokenType.BANG;
@@ -16,6 +17,7 @@ import static com.craftinginterpreters.lox.TokenType.MINUS;
 import static com.craftinginterpreters.lox.TokenType.NIL;
 import static com.craftinginterpreters.lox.TokenType.NUMBER;
 import static com.craftinginterpreters.lox.TokenType.PLUS;
+import static com.craftinginterpreters.lox.TokenType.PRINT;
 import static com.craftinginterpreters.lox.TokenType.RIGHT_PAREN;
 import static com.craftinginterpreters.lox.TokenType.SEMICOLON;
 import static com.craftinginterpreters.lox.TokenType.SLASH;
@@ -33,12 +35,33 @@ public class Parser {
         this.tokens = tokens;
     }
 
-    Expr parse() {
-        try {
-            return expression();
-        } catch (ParseError error) {
-            return null;
+    List<Stmt> parse() {
+        List<Stmt> statements = new ArrayList<>();
+
+        while(!isAtEnd()) {
+            statements.add(statement());
         }
+
+        return statements;
+    }
+
+    private Stmt statement() {
+        if (match(PRINT)) {
+            return printStatement();
+        }
+        return expressionStatement();
+    }
+
+    private Stmt printStatement() {
+        Expr value = expression();
+        consume(SEMICOLON, "Expected semicolon after expression.");
+        return new Stmt.Print(value);
+    }
+
+    private Stmt expressionStatement() {
+        Expr expr = expression();
+        consume(SEMICOLON, "Expected semicolon after expression.");
+        return new Stmt.Expression(expr);
     }
 
     private Expr expression() {
