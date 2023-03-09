@@ -165,7 +165,7 @@ public class Parser {
             return new Expr.Grouping(expr);
         }
 
-        if (match(VAR)) {
+        if (match(IDENTIFIER)) {
             return new Expr.Variable(previous());
         }
 
