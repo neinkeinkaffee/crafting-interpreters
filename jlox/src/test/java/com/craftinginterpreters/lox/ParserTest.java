@@ -107,4 +107,29 @@ class ParserTest {
         assertInstanceOf(Stmt.If.class, statements.get(0));
         assertInstanceOf(Stmt.Block.class, ((Stmt.If)statements.get(0)).thenBranch);
     }
+
+    @Test
+    void parsesProgramWithForLoop() {
+        String source = """
+            var a = 0;
+            var temp;
+            
+            for (var b = 1; a < 10000; b = temp + b) {
+                print a;
+                temp = a;
+                a = b;
+            }
+        """;
+        Scanner scanner = new Scanner(source);
+        List<Token> tokens = scanner.scanTokens();
+
+        Parser parser = new Parser(tokens);
+        List<Stmt> statements = parser.parse();
+
+        assertInstanceOf(Stmt.Var.class, statements.get(0));
+        assertInstanceOf(Stmt.Var.class, statements.get(1));
+        assertInstanceOf(Stmt.Block.class, statements.get(2));
+        assertInstanceOf(Stmt.Var.class, ((Stmt.Block)statements.get(2)).statements.get(0));
+        assertInstanceOf(Stmt.While.class, ((Stmt.Block)statements.get(2)).statements.get(1));
+    }
 }
