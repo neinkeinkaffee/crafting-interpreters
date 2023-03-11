@@ -26,7 +26,7 @@ class ParserTest {
     }
 
     @Test
-    void parsesBlockStatements() {
+    void parsesNestedBlocks() {
         String source = """
             var a = "global a";
             var b = "global b";
@@ -73,5 +73,38 @@ class ParserTest {
         assertInstanceOf(Stmt.Print.class, statements.get(4));
         assertInstanceOf(Stmt.Print.class, statements.get(5));
         assertInstanceOf(Stmt.Print.class, statements.get(6));
+    }
+
+    @Test
+    void parsesifElse() {
+        String source = """
+            if (true) print "hello"; else print "not hello";
+        """;
+        Scanner scanner = new Scanner(source);
+        List<Token> tokens = scanner.scanTokens();
+
+        Parser parser = new Parser(tokens);
+        List<Stmt> statements = parser.parse();
+
+        assertInstanceOf(Stmt.If.class, statements.get(0));
+    }
+
+    @Test
+    void parsesIfElseWithBlocks() {
+        String source = """
+            if (true) {
+                print "hello"
+            }; else {
+                print "not hello";
+            }
+        """;
+        Scanner scanner = new Scanner(source);
+        List<Token> tokens = scanner.scanTokens();
+
+        Parser parser = new Parser(tokens);
+        List<Stmt> statements = parser.parse();
+
+        assertInstanceOf(Stmt.If.class, statements.get(0));
+        assertInstanceOf(Stmt.Block.class, ((Stmt.If)statements.get(0)).thenBranch);
     }
 }
