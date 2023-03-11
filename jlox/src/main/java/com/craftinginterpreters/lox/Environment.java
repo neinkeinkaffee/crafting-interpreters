@@ -7,6 +7,10 @@ public class Environment {
     final Environment enclosing;
     private final Map<String, Object> values = new HashMap<>();
 
+    public Environment() {
+        this.enclosing = null;
+    }
+
     public Environment(Environment enclosing) {
         this.enclosing = enclosing;
     }
