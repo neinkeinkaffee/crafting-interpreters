@@ -3,6 +3,7 @@ package com.craftinginterpreters.lox;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.craftinginterpreters.lox.TokenType.AND;
 import static com.craftinginterpreters.lox.TokenType.BANG;
 import static com.craftinginterpreters.lox.TokenType.BANG_EQUAL;
 import static com.craftinginterpreters.lox.TokenType.ELSE;
@@ -21,6 +22,7 @@ import static com.craftinginterpreters.lox.TokenType.LESS_EQUAL;
 import static com.craftinginterpreters.lox.TokenType.MINUS;
 import static com.craftinginterpreters.lox.TokenType.NIL;
 import static com.craftinginterpreters.lox.TokenType.NUMBER;
+import static com.craftinginterpreters.lox.TokenType.OR;
 import static com.craftinginterpreters.lox.TokenType.PLUS;
 import static com.craftinginterpreters.lox.TokenType.PRINT;
 import static com.craftinginterpreters.lox.TokenType.RIGHT_BRACE;
@@ -125,7 +127,7 @@ public class Parser {
     }
 
     private Expr assignment() {
-        Expr expr = equality();
+        Expr expr = or();
 
         if (match(EQUAL)) {
             Token equals = previous();
@@ -137,6 +139,30 @@ public class Parser {
             }
 
             error(equals, "Invalid assignment target");
+        }
+
+        return expr;
+    }
+
+    private Expr or() {
+        Expr expr = and();
+
+        while(match(OR)) {
+            Token operator = previous();
+            Expr right = and();
+            return new Expr.Logical(expr, operator, right);
+        }
+
+        return expr;
+    }
+
+    private Expr and() {
+        Expr expr = equality();
+
+        while(match(AND)) {
+            Token operator = previous();
+            Expr right = equality();
+            return new Expr.Logical(expr, operator, right);
         }
 
         return expr;
