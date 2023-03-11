@@ -1,5 +1,7 @@
 package com.craftinginterpreters.lox;
 
+import java.util.List;
+
 abstract class Stmt {
     interface Visitor<R> {
         R visitExpressionStmt(Expression stmt);
@@ -34,9 +36,9 @@ abstract class Stmt {
     }
 
     static class Var extends Stmt {
-        Var(Token name, Expr initializer) {
+        Var(Token name, Expr initialiser) {
             this.name = name;
-            this.initialiser = initializer;
+            this.initialiser = initialiser;
         }
 
         @Override
